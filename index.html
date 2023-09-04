@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <input type="text" placeholder="content" id="id1"/>
+    <button onclick="setNotesFunc()">SetNotes</button>
+    <button onclick="getNotesFunc()">GetNotes</button>
+    <button onclick="connectMetamask()">Connect to Metamask</button>
+
+    <p id="id2">test</p>
+</body>
+<script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"
+        type="application/javascript"></script>
+<script>
+    const abi = `[
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "addrToCollection",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "addr",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getNotes",
+		"outputs": [
+			{
+				"internalType": "string[]",
+				"name": "",
+				"type": "string[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_content",
+				"type": "string"
+			}
+		],
+		"name": "setNotes",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+]`
+    const address = `0x4485762C779EBeA6fA16f884d1B9092eA8a2266D`
+
+    let inputField = document.getElementById("id1")
+    let showField = document.getElementById("id2")
+    
+    async function connectMetamask(){
+        if(window.ethereum){
+            const provider = new ethers.providers.Web3Provider(window.ethereum)
+            await provider.send("eth_requestAccounts",[]);
+        }
+    }
+
+    async function setNotesFunc(){
+        const provider = new ethers.providers.Web3Provider(window.ethereum)
+        const signer = provider.getSigner()
+        const contract = new ethers.Contract(address , abi , signer)
+        const tx = await contract.setNotes(inputField.value)
+        await tx.wait()
+        console.log("tx completed")
+    }
+    async function getNotesFunc(){
+        const provider = new ethers.providers.Web3Provider(window.ethereum)
+        const signer = provider.getSigner()
+        const contract = new ethers.Contract(address , abi , signer)
+        const data = await contract.getNotes()
+        console.log(data)
+        showField.innerText = data
+    }
+
+</script>
+</html>
