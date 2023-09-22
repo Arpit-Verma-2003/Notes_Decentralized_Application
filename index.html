@@ -3,84 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>another try</title>
+    <title>Document</title>
 </head>
 <body>
-    <div>
-        <h1>another day another try</h1>
-        <p>set your mood </p>
-        <label for="mood"> input kro</label> <br>
-        <input type="text" id="mood">
+    <input type="text" placeholder="content" id="id1"/>
+    <button onclick="setNotesFunc()">SetNotes</button>
+    <button onclick="getNotesFunc()">GetNotes</button>
+    <button onclick="connectMetamask()">Connect to Metamask</button>
 
-        <button onclick="getMood()">Get</button>
-        <button onclick="setMood()">Set</button>
-        <button onclick="connectMetamask()">Metamask se jodo</button>
-        <p id="showMood"></p>
-    </div>   
-  <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"
+    <p id="id2">test</p>
+</body>
+<script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"
         type="application/javascript"></script>
 <script>
-    const moodCAdd = `0x4485762C779EBeA6fA16f884d1B9092eA8a2266D`
-    const moodCAbi = `[
+    const abi = `[
 	{
 		"inputs": [
 			{
 				"internalType": "string",
-				"name": "_mood",
+				"name": "_content",
 				"type": "string"
 			}
 		],
-		"name": "setMood",
+		"name": "setNotes",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
 		"inputs": [],
-		"name": "getMood",
+		"name": "getNotes",
 		"outputs": [
 			{
-				"internalType": "string",
+				"internalType": "string[]",
 				"name": "",
-				"type": "string"
+				"type": "string[]"
 			}
 		],
 		"stateMutability": "view",
 		"type": "function"
 	}
 ]`
-async function connectMetamask(){
-    if(window.ethereum){
+    const address = `0x4485762C779EBeA6fA16f884d1B9092eA8a2266D`
+
+    let inputField = document.getElementById("id1")
+    let showField = document.getElementById("id2")
+    
+    async function connectMetamask(){
+        if(window.ethereum){
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            await provider.send("eth_requestAccounts",[]);
+			const signer = provider.getSigner();
+        }
+    }
+
+    async function setNotesFunc(){
         provider = new ethers.providers.Web3Provider(window.ethereum);
-        provider.send("eth_requestAccounts", []);
+        signer = provider.getSigner();
+        const contract = new ethers.Contract(address , abi , signer);
+        const tx = await contract.setNotes(inputField.value);
+        await tx.wait();
+        console.log("tx completed");
+    }
+    async function getNotesFunc(){
+        try {
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        signer = provider.getSigner();
+        const contract = new ethers.Contract(address, abi, signer);
+        const data = await contract.getNotes();
+		const notesString = data.join(', ');
+        console.log(notesString);
+        showField.innerText = notesString;
+    } catch (error) {
+        console.error("Error calling getNotesFunc:", error);
     }
 }
 
-async function getMood(){
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    const contract = new ethers.Contract(
-      moodCAdd,
-      moodCAbi,
-      signer
-    )
-    const moody = await contract.getMood();
-    document.getElementById("showMood").innerText = `your mood ${moody}`;
-    console.log(moody);
-}
-async function setMood(){
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    const contract = new ethers.Contract(
-      moodCAdd,
-      moodCAbi,
-      signer
-    )
-    const mood1 = document.getElementById("mood")
-    await contract.setMood(mood1);
-}
-
-    </script> 
-</body>
-
+</script>
 </html>
